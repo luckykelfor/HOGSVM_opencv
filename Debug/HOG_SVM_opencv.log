@@ -1,0 +1,21 @@
+﻿生成启动时间为 2015/10/16 19:06:39。
+     1>项目“D:\Myworkspace\OpenCVProjects\Detection\PedestrianDetection\HOG_SVM_opencv\HOG_SVM_opencv.vcxproj”在节点 2 上(Build 个目标)。
+     1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V120\Microsoft.CppBuild.targets(388,5): warning MSB8028: The intermediate directory (Debug\) contains files shared from another project (HOG_SVM_opencv.vcxproj).  This can lead to incorrect clean and rebuild behavior.
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt "源.cpp"
+         源.cpp
+     1>d:\myworkspace\opencvprojects\detection\pedestriandetection\hog_svm_opencv\源.cpp(69): warning C4244: “return”: 从“double”转换到“float”，可能丢失数据
+     1>d:\myworkspace\opencvprojects\detection\pedestriandetection\hog_svm_opencv\源.cpp(187): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+     1>d:\myworkspace\opencvprojects\detection\pedestriandetection\hog_svm_opencv\源.cpp(224): warning C4018: “<”: 有符号/无符号不匹配
+     1>d:\myworkspace\opencvprojects\detection\pedestriandetection\hog_svm_opencv\源.cpp(308): warning C4018: “<”: 有符号/无符号不匹配
+     1>d:\myworkspace\opencvprojects\detection\pedestriandetection\hog_svm_opencv\源.cpp(312): warning C4018: “<”: 有符号/无符号不匹配
+     1>d:\myworkspace\opencvprojects\detection\pedestriandetection\hog_svm_opencv\源.cpp(320): warning C4018: “<”: 有符号/无符号不匹配
+     1>d:\myworkspace\opencvprojects\detection\pedestriandetection\hog_svm_opencv\源.cpp(420): warning C4018: “<”: 有符号/无符号不匹配
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"D:\Myworkspace\OpenCVProjects\Detection\PedestrianDetection\Debug\HOGSVMOpencv.exe" /INCREMENTAL /NOLOGO D:\opencv\build\x86\vc12\lib\opencv_calib3d2411d.lib D:\opencv\build\x86\vc12\lib\opencv_contrib2411d.lib D:\opencv\build\x86\vc12\lib\opencv_core2411d.lib D:\opencv\build\x86\vc12\lib\opencv_features2d2411d.lib D:\opencv\build\x86\vc12\lib\opencv_flann2411d.lib D:\opencv\build\x86\vc12\lib\opencv_gpu2411d.lib D:\opencv\build\x86\vc12\lib\opencv_highgui2411d.lib D:\opencv\build\x86\vc12\lib\opencv_imgproc2411d.lib D:\opencv\build\x86\vc12\lib\opencv_legacy2411d.lib D:\opencv\build\x86\vc12\lib\opencv_ml2411d.lib D:\opencv\build\x86\vc12\lib\opencv_nonfree2411d.lib D:\opencv\build\x86\vc12\lib\opencv_objdetect2411d.lib D:\opencv\build\x86\vc12\lib\opencv_ocl2411d.lib D:\opencv\build\x86\vc12\lib\opencv_photo2411d.lib D:\opencv\build\x86\vc12\lib\opencv_stitching2411d.lib D:\opencv\build\x86\vc12\lib\opencv_superres2411d.lib D:\opencv\build\x86\vc12\lib\opencv_ts2411d.lib D:\opencv\build\x86\vc12\lib\opencv_video2411d.lib D:\opencv\build\x86\vc12\lib\opencv_videostab2411d.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"D:\Myworkspace\OpenCVProjects\Detection\PedestrianDetection\Debug\HOGSVMOpencv.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:\Myworkspace\OpenCVProjects\Detection\PedestrianDetection\Debug\HOGSVMOpencv.lib" /MACHINE:X86 "Debug\源.obj"
+         HOG_SVM_opencv.vcxproj -> D:\Myworkspace\OpenCVProjects\Detection\PedestrianDetection\Debug\HOGSVMOpencv.exe
+     1>已完成生成项目“D:\Myworkspace\OpenCVProjects\Detection\PedestrianDetection\HOG_SVM_opencv\HOG_SVM_opencv.vcxproj”(Build 个目标)的操作。
+
+已成功生成。
+
+已用时间 00:00:06.76
