@@ -16,7 +16,7 @@ using namespace cv;
 #define  NO 0
 #define DESCRIPTOR_FIRST_SAVED YES
 #define DESCRIPTOR_SECOND_SAVED YES
-#define HARD_SAMPLE_SAVED YES
+#define HARD_SAMPLE_SAVED  YES
 #define CENTRAL_CROP false  //true:训练时，对96*160的INRIA正样本图片剪裁出中间的64*128大小人体
 #define RANDNEG_SAVED YES
 
@@ -26,30 +26,30 @@ using namespace cv;
 
 
 // 存储特征描述
-static string featuresFile = "D:/Myworkspace/ImageData/BottlesSet/features_opencvVersion_bottle.dat";
+static string featuresFile = "D:/Myworkspace/ImageData/INRIAPerson/features_opencvVersion.dat";
 
 // 存储HOG特征描述符
-static string descriptorVectorFile = "D:/Myworkspace/ImageData/BottlesSet/descriptorvector_opencvVersion_bottle.dat";
+static string descriptorVectorFile = "D:/Myworkspace/ImageData/INRIAPerson/descriptorvector_opencvVersion.dat";
 
 //original 训练样本路径名
-static string posTrainingSamplesDir = "D:/Myworkspace/ImageData/BottlesSet/pos/";
-static string originalNegTrainingSamplesDir = "D:/Myworkspace/ImageData/BottlesSet/neg/";
+static string posTrainingSamplesDir = "D:/Myworkspace/ImageData/INRIAPerson/pos/";
+static string originalNegTrainingSamplesDir = "D:/Myworkspace/ImageData/INRIAPerson/neg/";
 //从原始负样本随机裁剪的图像
-static string randNegSamplesDir = "D:/Myworkspace/ImageData/BottlesSet/randneg/";
+static string randNegSamplesDir = "D:/Myworkspace/ImageData/INRIAPerson/randneg/";
 
 //测试样本路径名
-static string testPosDir = "D:/Myworkspace/ImageData/BottlesSet/test/pos/";
-static string testNegDir = "D:/Myworkspace/ImageData/BottlesSet/test/neg/";
-static string testSamplesDir = "D:/Myworkspace/ImageData/BottlesSet/test/";
+static string testPosDir = "D:/Myworkspace/ImageData/INRIAPerson/test/pos/";
+static string testNegDir = "D:/Myworkspace/ImageData/INRIAPerson/test/neg/";
+static string testSamplesDir = "D:/Myworkspace/ImageData/INRIAPerson/test/";
 //生成的难例存储路径：
-static string hardSampleDir = "D:/Myworkspace/ImageData/BottlesSet/hard_opencvVersion/";
+static string hardSampleDir = "D:/Myworkspace/ImageData/INRIAPerson/hard_opencvVersion/";
 
 static const Size trainingPadding = Size(0, 0); //填充值
 static const Size winStride = Size(8, 8);			//窗口步进
 
 													//保存最后的SVM模型
-static string svmModelFile_first = "D:/Myworkspace/ImageData/BottlesSet/svmModel_first.xml";
-static string svmModelFile = "D:/Myworkspace/ImageData/BottlesSet/svmModel.xml";
+static string svmModelFile_first = "D:/Myworkspace/ImageData/INRIAPerson/svmModel_first.xml";
+static string svmModelFile = "D:/Myworkspace/ImageData/INRIAPerson/svmModel.xml";
 
 
 //继承自CvSVM的类，因为生成setSVMDetector()中用到的检测子参数时，需要用到训练好的SVM的decision_func参数，
@@ -288,49 +288,112 @@ static void detecOnSet(const HOGDescriptor& hog, const double hitThreshold, cons
 	printf("Results:\n\tTrue Positives: %u\n\tTrue Negatives: %u\n\tFalse Positives: %u\n\tFalse Negatives: %u\n", truePositives, trueNegatives, falsePositives, falseNegatives);
 }
 
+
+
+Size2f rotateImg(int degree, const Mat &img, Mat &img_rotate)
+{
+	if (degree == 0)
+	{
+		  img.copyTo(img_rotate);
+		return img.size();
+	}
+	double angle = degree  * CV_PI / 180.; // 弧度    
+	double a = sin(angle), b = cos(angle);
+	int width = img.cols;
+	int height = img.rows;
+	int width_rotate = int(height * fabs(a) + width * fabs(b));
+	int height_rotate = int(width * fabs(a) + height * fabs(b));
+	img_rotate = Mat(cvSize(width_rotate, height_rotate), 8, 3);
+	Point2f center = Point2f(width / 2, height / 2);
+	Mat map_matrix = getRotationMatrix2D(center, degree, 1.0);
+	map_matrix.at<double>(0, 2) += int((width_rotate - width) / 2);
+	map_matrix.at<double>(1, 2) += int((height_rotate - height) / 2);
+	warpAffine(img, img_rotate, map_matrix, img_rotate.size());
+	return img_rotate.size();
+}
 /************************************************************************/
 /* 在测试集上进行检测                                                                     */
 /************************************************************************/
 static void detectTest(HOGDescriptor &hog, float hitThreshold, vector<string> & testSamples)
 {
 	Mat src;
-	vector<Rect> found, found_filtered;//矩形框数组
+	vector<Rect> found, found_filtered;//矩形框数组;
+	//vector<RotatedRect> rotatedDetectRect;
 	for (vector<string>::iterator i = testSamples.begin(); i < testSamples.end(); i++)
 	{
 
 		src = imread(*i);
 
 		cout << "进行多尺度HOG人体检测" << endl;
-		hog.detectMultiScale(src, found, abs(hitThreshold),Size(8,8), Size(0, 0), 1.15, 2);//对图片进行多尺度行人检测
-		cout << "找到的矩形框个数：" << found.size() << endl;
+		//for (int k = 0; k < 18; k++)//every ten degree detect once;
+		//{
+			//Mat rotatedimage;
+			//Size2f rotatedSize =  rotateImg(k * 10, src, rotatedimage);
+			hog.detectMultiScale(src, found, abs(hitThreshold), Size(8, 8), Size(0, 0), 1.05, 2);//对图片进行多尺度行人检测
+			cout << "找到的矩形框个数：" << found.size() << endl;
 
-		//找出所有没有嵌套的矩形框r,并放入found_filtered中,如果有嵌套的话,则取外面最大的那个矩形框放入found_filtered中
-		for (int i = 0; i < found.size(); i++)
-		{
-			Rect r = found[i];
-			int j = 0;
-			for (; j < found.size(); j++)
-				if (j != i && (r & found[j]) == r)
-					break;
-			if (j == found.size())
-				found_filtered.push_back(r);
-		}
+			//找出所有没有嵌套的矩形框r,并放入found_filtered中,如果有嵌套的话,则取外面最大的那个矩形框放入found_filtered中
+			for (int i = 0; i < found.size(); i++)
+			{
+				Rect r = found[i];
+				int j = 0;
+				for (; j < found.size(); j++)
+					if (j != i && (r & found[j]) == r)
+						break;
+				if (j == found.size())
+					found_filtered.push_back(r);
+			}
 
-		//画矩形框，因为hog检测出的矩形框比实际人体框要稍微大些,所以这里需要做一些调整
-		for (int i = 0; i<found_filtered.size(); i++)
-		{
-			Rect r = found_filtered[i];
-			r.x += cvRound(r.width*0.1);
-			r.width = cvRound(r.width*0.8);
-			r.y += cvRound(r.height*0.07);
-			r.height = cvRound(r.height*0.8);
-			rectangle(src, r.tl(), r.br(), Scalar(0, 255, 0), 3);
-		}
+		//	//for (int i = 0; i < found_filtered.size(); i++)
+		//	//{
+		//	//	double angle = k*10  * CV_PI / 180.; // 弧度    
+		//	//	double a = sin(angle), b = cos(angle);
+		//	//	float rotated_x = (found_filtered[i].x + found_filtered[i].width / 2 - rotatedSize.width / 2);
+		//	//	float rotated_y = (rotatedSize.height / 2 - found_filtered[i].y + found_filtered[i].height / 2);
 
-		found_filtered.clear();
-		found.clear();
+		//	//	float detectRectCenter_x = rotated_x*b - rotated_y*a+src.cols/2;
+		//	//	float detectRectCenter_y = src.rows - rotated_x*a + rotated_y*b;
+		//	//	rotatedDetectRect.push_back(RotatedRect(Point2f(detectRectCenter_x,detectRectCenter_y),Size2f(found_filtered[i].size()),10*k));
+		//	//}
+
+		//	//画矩形框，因为hog检测出的矩形框比实际人体框要稍微大些,所以这里需要做一些调整
+			for (int i = 0; i<found_filtered.size(); i++)
+			{
+				Rect r = found_filtered[i];
+				r.x += cvRound(r.width*0.1);
+				r.width = cvRound(r.width*0.8);
+				r.y += cvRound(r.height*0.07);
+				r.height = cvRound(r.height*0.8);
+				rectangle(src, r.tl(), r.br(), Scalar(0, 255, 0), 3);
+			}
+		//	namedWindow("src", 0);
+		//	imshow("src", rotatedimage);
+		//	waitKey(0);//注意：imshow之后必须加waitKey，否则无法显示图像
+
+			
+
+		//}
+		//Point2f vertices[4];
+		//for (int i = 0; i < rotatedDetectRect.size(); i++)
+		//{
+		//	rotatedDetectRect[i].points(vertices);
+		//	for (int j = 0; j < 4; j++)
+		//	{
+		//	
+		//			line(src, vertices[i], vertices[(i + 1) % 4], Scalar(0, 255, 0));
+		//	}
+		//}
+
+
+			found_filtered.clear();
+			found.clear();
+		namedWindow("src", 0);
 		imshow("src", src);
-		waitKey(500);//注意：imshow之后必须加waitKey，否则无法显示图像
+	    waitKey();//注意：imshow之后必须加waitKey，否则无法显示图像
+		//rotatedDetectRect.clear();
+
+
+		
 	}
 
 }
@@ -433,7 +496,7 @@ static long findHardExmaple(const HOGDescriptor& hog, const double hitThreshold,
 			//将矩形框保存为图片，就是Hard Example
 			Mat hardExampleImg = imageData(r);//从原图上截取矩形框大小的图片
 			resize(hardExampleImg, hardExampleImg, Size(WINSIZE_WIDTH, WINSIZE_HEIGHT));//将剪裁出来的图片缩放为64*128大小
-			sprintf_s(saveName, "hardexample%09ld.jpg", hardExampleCount++);//生成hard example图片的文件名
+			sprintf_s(saveName , "hardexample%09ld.jpg", hardExampleCount++);//生成hard example图片的文件名
 			imwrite(hardExampleDir + saveName, hardExampleImg);//保存文件
 		}
 
@@ -471,7 +534,7 @@ int main()
 	static vector<string> validExtensions;
 	validExtensions.push_back("jpg");
 	validExtensions.push_back("png");
-	validExtensions.push_back("ppm");
+	validExtensions.push_back("bmp");
 	
 	vector<string> testSamples,
 		testNegSamples,
@@ -492,7 +555,7 @@ int main()
 
 	//Randomly generate 10 negative sample of size 64*128 for each original negative sample in /neg folder. Totally we weill ge 1,2180 neg samples
 
-	////图片大小应该能能至少包含一个64*128的窗口
+	////图片大小应该能能至少包含一个64*128的窗口//64x64
 	if (RANDNEG_SAVED == NO)
 	{
 		char saveName[256];
@@ -500,14 +563,14 @@ int main()
 		for (vector<string>::iterator i = originalNegTrainingSamples.begin(); i < originalNegTrainingSamples.end(); i++)
 		{
 			Mat src = imread(*i);
-			if (src.cols >= 128 && src.rows >= 128)
-			{
+			if (src.cols >= 64 && src.rows >= 128)//64X64
+			{  
 				//srand(time(NULL));//设置随机数种子
 
 				//从每张图片中随机裁剪10个64*128大小的不包含人的负样本
 				for (int i = 0; i < 10; i++)
 				{
-					int x = (rand() % (src.cols - 128)); //左上角x坐标
+					int x = (rand() % (src.cols - 64)); //左上角x坐标
 					int y = (rand() % (src.rows - 128)); //左上角y坐标
 														 //cout<<x<<","<<y<<endl;
 					Mat imgROI = src(Rect(x, y, WINSIZE_WIDTH, WINSIZE_HEIGHT));
@@ -641,7 +704,7 @@ int main()
 	myHOG.setSVMDetector(myDetector);
 #endif
 	cout << "在训练集上进行行人检测(结果仅作参考)\n";
-	detecOnSet(myHOG, 0, posTrainingSamples, originalNegTrainingSamples);
+//	detecOnSet(myHOG, 0, posTrainingSamples, originalNegTrainingSamples);
 
 #if DESCRIPTOR_SECOND_SAVED == NO
 
@@ -714,7 +777,7 @@ int main()
 	cout << "在训练集上进行行人检测(结果仅作参考)\n";
 
 #endif //#if DESCRIPTOR_SECOND_SAVED
-	detecOnSet(myHOG, 0, posTrainingSamples,originalNegTrainingSamples);
+	//detecOnSet(myHOG, 0, testPosSamples, testNegSamples);
 	detectTest(myHOG, 0, testSamples);
 	waitKey(1000);
 	return 0;
